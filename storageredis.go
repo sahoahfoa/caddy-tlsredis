@@ -351,6 +351,12 @@ func (rd RedisStorage) Store(key string, value []byte) error {
 		return fmt.Errorf("unable to store data for %v: %v", key, err)
 	}
 
+	if n, err := rd.Client.Publish(rd.ctx, rd.prefixKey(key), "store").Result(); err != nil {
+		rd.Logger.Warnf("unable to publish 'store' for %v: %v", key, err)
+	} else {
+		rd.Logger.Debugf("[store] Key '%v' has %v subscribers", key, n)
+	}
+	
 	return nil
 }
 
@@ -377,6 +383,12 @@ func (rd RedisStorage) Delete(key string) error {
 		return fmt.Errorf("unable to delete data for key %s: %v", key, err)
 	}
 
+	if n, err := rd.Client.Publish(rd.ctx, rd.prefixKey(key), "delete").Result(); err != nil {
+		rd.Logger.Warnf("unable to publish 'delete' for %v: %v", key, err)
+	} else {
+		rd.Logger.Debugf("[delete] Key '%v' has %v subscribers", key, n)
+	}
+	
 	return nil
 }
 
